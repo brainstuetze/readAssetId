@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Asset ID OCR Capture</title>
+    <link rel="icon" href="favicon.ico" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <h1>Asset ID OCR Capture</h1>
+      <section class="preview-section">
+        <video id="videoPreview" autoplay playsinline muted></video>
+        <button id="captureButton" type="button">Capture Frame</button>
+        <p id="statusMessage" role="status"></p>
+      </section>
+      <section class="results-section">
+        <label for="ocrResult">Detected Asset ID</label>
+        <textarea id="ocrResult" rows="4" readonly placeholder="Capture a frame to read the Asset ID"></textarea>
+      </section>
+      <canvas id="captureCanvas" hidden></canvas>
+    </main>
+    <script src="app.js" type="module"></script>
+  </body>
+</html>
