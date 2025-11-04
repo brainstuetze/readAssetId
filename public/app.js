@@ -121,7 +121,6 @@ async function handleCapture() {
   }
 
   captureButton.disabled = true;
-  resultTextarea.value = '';
 
   canvas.width = video.videoWidth;
   canvas.height = video.videoHeight;
@@ -133,14 +132,13 @@ async function handleCapture() {
     const assetId = extractAssetId(text);
 
     if (assetId) {
-      resultTextarea.value = assetId;
+      const existing = resultTextarea.value.trim();
+      resultTextarea.value = existing ? `${existing}\n${assetId}` : assetId;
       setStatus('Asset ID detected successfully.');
     } else {
-      resultTextarea.value = text.trim();
       setStatus('No Asset ID found. Please ensure the code matches 71080-YYYY-NNNN.', 'warning');
     }
   } catch (error) {
-    resultTextarea.value = '';
     setStatus(error.message || 'Unexpected error during OCR.', 'error');
   } finally {
     captureButton.disabled = false;
