@@ -6,6 +6,8 @@ const canvas = document.getElementById('captureCanvas');
 const ctx = canvas.getContext('2d');
 
 const ASSET_ID_REGEX = /71080[-_]\d{4}[-_]\d{4}/;
+const TESSERACT_SRC = 'https://unpkg.com/tesseract.js@4.1.1/dist/tesseract.min.js';
+let tesseractLoadPromise = null;
 
 function setStatus(message, type = 'info') {
   statusMessage.textContent = message;
@@ -39,8 +41,45 @@ async function initCamera() {
   }
 }
 
+async function ensureTesseractLoaded() {
+  if (window.Tesseract?.recognize) {
+    return window.Tesseract;
+  }
+
+  if (!tesseractLoadPromise) {
+    tesseractLoadPromise = (async () => {
+      try {
+        setStatus('Loading OCR engine…');
+        const response = await fetch(TESSERACT_SRC);
+        if (!response.ok) {
+          throw new Error(`Failed to load OCR script (HTTP ${response.status}).`);
+        }
+        const scriptText = await response.text();
+        const scriptElement = document.createElement('script');
+        scriptElement.type = 'text/javascript';
+        scriptElement.text = scriptText;
+        document.head.appendChild(scriptElement);
+
+        if (!window.Tesseract?.recognize) {
+          throw new Error('OCR engine did not initialize correctly.');
+        }
+
+        return window.Tesseract;
+      } catch (error) {
+        console.error('Failed to load Tesseract.js', error);
+        throw new Error(
+          'Unable to load the OCR engine. Please verify your network connection or adjust the Content Security Policy to allow downloads from unpkg.com.'
+        );
+      }
+    })();
+  }
+
+  return tesseractLoadPromise;
+}
+
 async function runOcr(image) {
   try {
+    const Tesseract = await ensureTesseractLoaded();
     setStatus('Processing image…');
     const { data } = await Tesseract.recognize(image, 'eng', {
       logger: (m) => {
@@ -52,6 +91,9 @@ async function runOcr(image) {
     return data.text;
   } catch (error) {
     console.error('OCR failed', error);
+    if (error instanceof Error) {
+      throw error;
+    }
     throw new Error('OCR processing failed. Please try again.');
   }
 }
